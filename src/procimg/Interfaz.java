@@ -3,17 +3,22 @@ package procimg;
 
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import static java.lang.Math.sqrt;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -24,11 +29,22 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
+
+
 public class Interfaz extends javax.swing.JFrame {
 	JFileChooser seleccionar = new JFileChooser();
 	File archivo;
 	byte[] imagen;
-	BufferedImage img;
+	BufferedImage img;// org
+
+      
+        int widith = 600;
+        int height = 600;
+        BufferedImage imgG = new BufferedImage(widith, height, BufferedImage.TYPE_INT_RGB); // img gris
+        BufferedImage imgE = new BufferedImage(widith, height, BufferedImage.TYPE_INT_RGB); // img Erocionada
+        BufferedImage imgD = new BufferedImage(widith, height, BufferedImage.TYPE_INT_RGB); // img Dilatada
+
+        
 	int[][] pixels = new int[600][600]; //matriz de grises original
 	int[][] pixelsMin = new int[600][600]; //matriz de grises minima
 	int[][] pixelsMax = new int[600][600]; //matriz de grises maxima
@@ -64,7 +80,7 @@ public class Interfaz extends javax.swing.JFrame {
             int green = (color & 0xff00) >> 8;
             int red = (color & 0xff0000) >> 16;
 
-            int Tg = red + green + blue / 3;
+            int Tg = (red + green + blue) / 3;
             return Tg;
         }
 
@@ -78,6 +94,7 @@ public class Interfaz extends javax.swing.JFrame {
                     }
                     Txt_Min.append("\n");
                 }
+                Txt_estado.setText("OK");
             }
             if (n == 2) {
                 for (int row = 0; row < matrix.length; row++) {
@@ -109,6 +126,10 @@ public class Interfaz extends javax.swing.JFrame {
 		}
 		return imagen;
 	}
+        
+        ArrayList<Point> lista = new ArrayList<Point>();
+        
+        double suma = 0;
 
 	
 	
@@ -131,9 +152,23 @@ public class Interfaz extends javax.swing.JFrame {
         Txt_y = new javax.swing.JTextField();
         Btn_color = new javax.swing.JButton();
         Txt_estado = new javax.swing.JLabel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel3 = new javax.swing.JPanel();
+        Panel = new javax.swing.JTabbedPane();
+        Img_org = new javax.swing.JPanel();
         L_img = new javax.swing.JLabel();
+        PanelImg = new javax.swing.JPanel();
+        L_imgG = new javax.swing.JLabel();
+        Btn_Gray = new javax.swing.JButton();
+        Txt_suma = new javax.swing.JLabel();
+        Img_Min = new javax.swing.JPanel();
+        L_ImgMin = new javax.swing.JLabel();
+        Btn_MostrarMin = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        Txt_profMin = new javax.swing.JTextField();
+        ImgMax = new javax.swing.JPanel();
+        L_ImgMax = new javax.swing.JLabel();
+        Btn_Max = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        Txt_profMax = new javax.swing.JTextField();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Txt_Min = new javax.swing.JTextArea();
@@ -193,6 +228,7 @@ public class Interfaz extends javax.swing.JFrame {
             }
         });
 
+        Txt_estado.setFont(new java.awt.Font("Noto Sans", 0, 18)); // NOI18N
         Txt_estado.setText("OK");
 
         L_img.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
@@ -202,24 +238,161 @@ public class Interfaz extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        javax.swing.GroupLayout Img_orgLayout = new javax.swing.GroupLayout(Img_org);
+        Img_org.setLayout(Img_orgLayout);
+        Img_orgLayout.setHorizontalGroup(
+            Img_orgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Img_orgLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(L_img, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+        Img_orgLayout.setVerticalGroup(
+            Img_orgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Img_orgLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(L_img, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(68, 68, 68))
         );
 
-        jTabbedPane1.addTab("Org", jPanel3);
+        Panel.addTab("Org", Img_org);
+
+        L_imgG.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+        L_imgG.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                L_imgGMouseClicked(evt);
+            }
+        });
+        L_imgG.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                L_imgGKeyPressed(evt);
+            }
+        });
+
+        Btn_Gray.setText("Mostrar");
+        Btn_Gray.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_GrayActionPerformed(evt);
+            }
+        });
+
+        Txt_suma.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
+
+        javax.swing.GroupLayout PanelImgLayout = new javax.swing.GroupLayout(PanelImg);
+        PanelImg.setLayout(PanelImgLayout);
+        PanelImgLayout.setHorizontalGroup(
+            PanelImgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelImgLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(L_imgG, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(PanelImgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Txt_suma, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(PanelImgLayout.createSequentialGroup()
+                        .addComponent(Btn_Gray)
+                        .addGap(0, 88, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        PanelImgLayout.setVerticalGroup(
+            PanelImgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelImgLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(PanelImgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(PanelImgLayout.createSequentialGroup()
+                        .addComponent(Btn_Gray)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Txt_suma, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(L_imgG, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        Panel.addTab("ImgGray", PanelImg);
+
+        L_ImgMin.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+
+        Btn_MostrarMin.setText("Mostrar");
+        Btn_MostrarMin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_MostrarMinActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("Profundidad, Default 1:");
+
+        javax.swing.GroupLayout Img_MinLayout = new javax.swing.GroupLayout(Img_Min);
+        Img_Min.setLayout(Img_MinLayout);
+        Img_MinLayout.setHorizontalGroup(
+            Img_MinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Img_MinLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(L_ImgMin, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Img_MinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(Btn_MostrarMin)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Txt_profMin))
+                .addContainerGap(24, Short.MAX_VALUE))
+        );
+        Img_MinLayout.setVerticalGroup(
+            Img_MinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Img_MinLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Img_MinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Img_MinLayout.createSequentialGroup()
+                        .addComponent(Btn_MostrarMin)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Txt_profMin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(L_ImgMin, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        Panel.addTab("ImgMin", Img_Min);
+
+        ImgMax.setBorder(null);
+
+        L_ImgMax.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+
+        Btn_Max.setText("Mostrar");
+        Btn_Max.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_MaxActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("Profundidad, Default 1:");
+
+        javax.swing.GroupLayout ImgMaxLayout = new javax.swing.GroupLayout(ImgMax);
+        ImgMax.setLayout(ImgMaxLayout);
+        ImgMaxLayout.setHorizontalGroup(
+            ImgMaxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ImgMaxLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(L_ImgMax, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ImgMaxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(Btn_Max)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Txt_profMax))
+                .addContainerGap(24, Short.MAX_VALUE))
+        );
+        ImgMaxLayout.setVerticalGroup(
+            ImgMaxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ImgMaxLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(ImgMaxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(ImgMaxLayout.createSequentialGroup()
+                        .addComponent(Btn_Max)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Txt_profMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(L_ImgMax, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        Panel.addTab("ImgMax", ImgMax);
 
         jPanel4.setToolTipText("");
 
@@ -240,7 +413,7 @@ public class Interfaz extends javax.swing.JFrame {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Btn_CalcularMin)
                 .addContainerGap())
@@ -257,7 +430,7 @@ public class Interfaz extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("MatMin", jPanel4);
+        Panel.addTab("MatMin", jPanel4);
 
         Txt_Max.setColumns(20);
         Txt_Max.setRows(5);
@@ -276,7 +449,7 @@ public class Interfaz extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Btn_calcularMax)
                 .addContainerGap())
@@ -293,7 +466,7 @@ public class Interfaz extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("MatMax", jPanel1);
+        Panel.addTab("MatMax", jPanel1);
 
         Txt_Org.setColumns(20);
         Txt_Org.setRows(5);
@@ -312,7 +485,7 @@ public class Interfaz extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Btn_CalcularOrg)
                 .addContainerGap())
@@ -329,7 +502,7 @@ public class Interfaz extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("MatOrg", jPanel2);
+        Panel.addTab("MatOrg", jPanel2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -338,7 +511,7 @@ public class Interfaz extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1)
+                    .addComponent(Panel)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(Txt_estado, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -379,7 +552,7 @@ public class Interfaz extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(Panel, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Btn_Abrir)
@@ -406,8 +579,8 @@ public class Interfaz extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.getAccessibleContext().setAccessibleName("");
-        jTabbedPane1.getAccessibleContext().setAccessibleDescription("");
+        Panel.getAccessibleContext().setAccessibleName("");
+        Panel.getAccessibleContext().setAccessibleDescription("");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -434,7 +607,7 @@ public class Interfaz extends javax.swing.JFrame {
 					|| archivo.getName().endsWith("png")
 					|| archivo.getName().endsWith("jpeg")) {
 					imagen = AbrirArchivo(archivo);
-					L_img.setText("");
+
 					L_img.setIcon(new ImageIcon(imagen));
 					ImageIcon fot = new ImageIcon(imagen);
 					Icon icono = new ImageIcon(fot.getImage().getScaledInstance(
@@ -462,14 +635,14 @@ public class Interfaz extends javax.swing.JFrame {
 				for (int j = 0; j < h; j++) {
 					pixels[i][j] = getPromRGB(img.getRGB(i, j)); //RGB -> Escala de grises
 				}
-			}
+			}                      
                         
-			Matrix mat = new Matrix(pixels,w); //instanciamos Matrix
+                        Txt_estado.setText("Procesando Imagen");
+			Matrix mat = new Matrix(pixels,w,1); //instanciamos Matrix
                         mat.procesaMatrix(); //procesamos la matriz en escala de grises
-                        pixelsMin = mat.getMin();
-                        pixelsMax = mat.getMax(); 
-
-
+                        pixelsMin = mat.getMin();// eroción
+                        pixelsMax = mat.getMax(); // dilaciatión
+                        Txt_estado.setText("Imagen Procesada");                     
 
 		} catch (Exception ex) {
 			System.out.println("Bruh: "+ex);
@@ -509,6 +682,108 @@ public class Interfaz extends javax.swing.JFrame {
         printMatrix(pixels, 3);
     }//GEN-LAST:event_Btn_CalcularOrgActionPerformed
 
+    private void Btn_GrayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GrayActionPerformed
+        // TODO add your handling code here:
+        for (int i = 0; i < widith; i++) {
+            for (int j = 0; j < height; j++) {
+                int n = pixels[i][j];
+                Color color = new Color(n,n,n);
+                imgG.setRGB(i, j, color.getRGB());
+            }
+        }
+        
+        L_imgG.setIcon(new ImageIcon(imgG));
+        ImageIcon fot = new ImageIcon(imgG);
+        Icon icono = new ImageIcon(fot.getImage().getScaledInstance(
+                L_imgG.getHeight(), L_imgG.getWidth(), Image.SCALE_DEFAULT));
+        L_imgG.setIcon(icono);    
+
+    }//GEN-LAST:event_Btn_GrayActionPerformed
+
+    private void Btn_MostrarMinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_MostrarMinActionPerformed
+        // TODO add your handling code here:
+        if (!Txt_profMin.getText().equals("")) {
+            
+            int msg = Integer.parseInt(Txt_profMin.getText());
+            Txt_estado.setText("Procesando Imagen, Eroción, Prof: " + msg);
+            Matrix mat = new Matrix(pixels, widith, msg); //instanciamos Matrix
+            mat.procesaMatrix(); //procesamos la matriz en escala de grises
+            pixelsMin = mat.getMin();// eroción
+            
+        }
+       
+        for (int i = 0; i < widith; i++) {
+            for (int j = 0; j < height; j++) {
+                int n = pixelsMin[i][j];
+                Color color = new Color(n, n, n);
+                imgE.setRGB(i, j, color.getRGB());
+            }
+        }
+
+        L_ImgMin.setIcon(new ImageIcon(imgE));
+        ImageIcon fot = new ImageIcon(imgE);
+        Icon icono = new ImageIcon(fot.getImage().getScaledInstance(
+                L_ImgMin.getHeight(), L_ImgMin.getWidth(), Image.SCALE_DEFAULT));
+        L_ImgMin.setIcon(icono);
+    }//GEN-LAST:event_Btn_MostrarMinActionPerformed
+
+    private void Btn_MaxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_MaxActionPerformed
+        // TODO add your handling code here:
+        if (!Txt_profMax.getText().equals("")) {
+            
+            int msg = Integer.parseInt(Txt_profMax.getText());
+            Txt_estado.setText("Procesando Imagen, Dilatación, Prof: "+msg);
+            Matrix mat = new Matrix(pixels, widith, msg); //instanciamos Matrix
+            mat.procesaMatrix(); //procesamos la matriz en escala de grises
+            pixelsMax = mat.getMax(); // dilaciatión
+            
+        } 
+        
+        for (int i = 0; i < widith; i++) {
+            for (int j = 0; j < height; j++) {
+                int n = pixelsMax[i][j];
+                Color color = new Color(n, n, n);
+                imgD.setRGB(i, j, color.getRGB());
+            }
+        }
+
+        L_ImgMax.setIcon(new ImageIcon(imgD));
+        ImageIcon fot = new ImageIcon(imgD);
+        Icon icono = new ImageIcon(fot.getImage().getScaledInstance(
+                L_ImgMax.getHeight(), L_ImgMax.getWidth(), Image.SCALE_DEFAULT));
+        L_ImgMax.setIcon(icono);
+
+    }//GEN-LAST:event_Btn_MaxActionPerformed
+
+    private void L_imgGMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_L_imgGMouseClicked
+        // TODO add your handling code here:
+        Graphics g = L_imgG.getGraphics();
+        g.setColor(Color.red);
+        g.drawRect(evt.getX(), evt.getY(), 5, 5);
+        
+        lista.add(new Point(evt.getX(), evt.getY()));
+        
+        if (lista.size() > 1) {
+            //DIBUJAR LINEA
+            suma =  suma + sqrt(
+                    (Math.pow((lista.get(lista.size() -2).x - lista.get(lista.size() -1).x),2)) +
+                    (Math.pow((lista.get(lista.size() -2).y - lista.get(lista.size() -1).y),2))
+                    );
+
+            Txt_suma.setText("Distancia(px): "+String.format("%.3f %n", suma));
+            
+            g.drawLine( lista.get(lista.size() - 1).x, 
+                        lista.get(lista.size() - 1).y, 
+                        lista.get(lista.size() - 2).x, 
+                        lista.get(lista.size() - 2).y);
+        }
+    }//GEN-LAST:event_L_imgGMouseClicked
+
+    private void L_imgGKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_L_imgGKeyPressed
+        // TODO add your handling code here:
+        System.out.print("okokokokok");
+    }//GEN-LAST:event_L_imgGKeyPressed
+
 
 	public static void main(String args[]) {
 		/* Set the Nimbus look and feel */
@@ -546,18 +821,32 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JButton Btn_Abrir;
     private javax.swing.JButton Btn_CalcularMin;
     private javax.swing.JButton Btn_CalcularOrg;
+    private javax.swing.JButton Btn_Gray;
+    private javax.swing.JButton Btn_Max;
+    private javax.swing.JButton Btn_MostrarMin;
     private javax.swing.JButton Btn_calcularMax;
     private javax.swing.JButton Btn_color;
     private javax.swing.JButton Btn_extraer;
     private javax.swing.JButton Btn_salir;
+    private javax.swing.JPanel ImgMax;
+    private javax.swing.JPanel Img_Min;
+    private javax.swing.JPanel Img_org;
+    private javax.swing.JLabel L_ImgMax;
+    private javax.swing.JLabel L_ImgMin;
     private javax.swing.JLabel L_img;
+    private javax.swing.JLabel L_imgG;
+    private javax.swing.JTabbedPane Panel;
+    private javax.swing.JPanel PanelImg;
     private javax.swing.JTextArea Txt_Max;
     private javax.swing.JTextArea Txt_Min;
     private javax.swing.JTextArea Txt_Org;
     private javax.swing.JTextField Txt_blue;
     private javax.swing.JLabel Txt_estado;
     private javax.swing.JTextField Txt_green;
+    private javax.swing.JTextField Txt_profMax;
+    private javax.swing.JTextField Txt_profMin;
     private javax.swing.JTextField Txt_red;
+    private javax.swing.JLabel Txt_suma;
     private javax.swing.JTextField Txt_x;
     private javax.swing.JTextField Txt_y;
     private javax.swing.JLabel jLabel1;
@@ -565,13 +854,13 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 }

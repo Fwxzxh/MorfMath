@@ -3,19 +3,30 @@ package procimg;
 import java.util.Random;
 
 public class Matrix {
-    // Crear una matriz random de 10 x 10 y hacer el procedimiento con ella
-    // TODO hacer que use como imput la matriz hecha con la imagen, convertir en
-    // blanco y negro
-    // https://medium.com/@himnickson/converting-rgb-image-to-the-grayscale-image-in-java-9e1edc5bd6e7
-    // formatear matriz
-    // https://stackoverflow.com/questions/5061912/printing-out-a-2-d-array-in-matrix-format
-    private int n;
-    private int Matrix[][];
-    int NewMatrix[][];
-    int MinMatrix[][];
+    
+    private int n;//dimenciones matriz cuadrada
+    private int d;//profundidad
+    int widith; //dimenciones en ancho y largo
+    int height; //...
+    
+    private int Matrix[][];//matrix de grises
+    int NewMatrix[][];//matrix dilatada
+    int MinMatrix[][];// matrix erosionada
+    
+    int MIN_X = 0;
+    int MIN_Y = 0;
+    int MAX_Y;
+    int MAX_X;
 
-    public Matrix(int matriz[][], int dimenciones){
+
+    public Matrix(int matriz[][], int dimenciones, int profundidad){
+        d = profundidad;
         n = dimenciones;
+        widith = n;
+        height = n;
+        MAX_Y = widith - 1;
+        MAX_X = height - 1;
+        
         Matrix = matriz;    
         NewMatrix = new int[n][n];
         MinMatrix = new int[n][n];
@@ -40,92 +51,30 @@ public class Matrix {
       }
       return menor;
     }
-
+    
     public void procesaMatrix() {
-      for (int i = 0; i < n; i++) {   // i=x
-        for (int j = 0; j < n; j++) { // j=y
-          if (i == 0 || j == 0 || i == n - 1 || j == n - 1) {
-            if (i == n - 1) {   // esquinas inf y borde inf
-              if (j == n - 1) { // esquina inf der
-                NewMatrix[i][j] = 11;
-                int[] valores =
-                    new int[] {Matrix[i - 1][j - 1], Matrix[i - 1][j],
-                               Matrix[i][j - 1], Matrix[i][j]};
-                NewMatrix[i][j] = mayorMatrix(valores);
-                MinMatrix[i][j] = menorMatrix(valores);
-              }
-              if (j == 0) { // esquina inf izq
-                int[] valores =
-                    new int[] {Matrix[i - 1][j], Matrix[i - 1][j + 1],
-                               Matrix[i][j], Matrix[i][j + 1]};
-                NewMatrix[i][j] = mayorMatrix(valores);
-                MinMatrix[i][j] = menorMatrix(valores);
-              } else { // el punto esta en el borde inferior
-                if (j != n - 1) {
-                  int[] valores =
-                      new int[] {Matrix[i - 1][j - 1], Matrix[i - 1][j],
-                                 Matrix[i - 1][j + 1], Matrix[i][j - 1],
-                                 Matrix[i][j],         Matrix[i][j + 1]};
-                  NewMatrix[i][j] = mayorMatrix(valores);
-                  MinMatrix[i][j] = menorMatrix(valores);
+        for (int X = 0; X < widith; X++) {
+            for (int Y = 0; Y < height; Y++) {      
+                int startPosX = (X - d < MIN_X) ? X : X - d;// iniciox = (posAct - n menor al mnimo?) 
+                int startPosY = (Y - d < MIN_Y) ? Y : Y - d;
+                int endPosX = (X + d > MAX_X) ? X : X + d;
+                int endPosY = (Y + d > MAX_Y) ? Y : Y + d;
+                
+                int di = d + d + 1;//calculamos el numero de vecinos
+                int dim = di * di;
+                int[] sum = new int[dim]; //dimencion de el array suma.
+                int o = 0;
+                
+                for (int rowNum = startPosX; rowNum <= endPosX; rowNum++) {     // incioX menor o igual a la posfinal x
+                    for (int colNum = startPosY; colNum <= endPosY; colNum++) {
+                        sum[o] = Matrix[rowNum][colNum];
+                        o++;
+                    }
                 }
-              }
+            NewMatrix[X][Y] = mayorMatrix(sum);
+            MinMatrix[X][Y] = menorMatrix(sum);
             }
-            if (i == 0) {   // esquinas sup y borde sup
-              if (j == 0) { // esquina sup izq
-                int[] valores =
-                    new int[] {Matrix[i][j], Matrix[i][j + 1], Matrix[i + 1][j],
-                               Matrix[i + 1][j + 1]};
-                NewMatrix[i][j] = mayorMatrix(valores);
-                MinMatrix[i][j] = menorMatrix(valores);
-              }
-              if (j == n - 1) { // esquina superior derecha
-                int[] valores =
-                    new int[] {Matrix[i][j - 1], Matrix[i][j],
-                               Matrix[i + 1][j - 1], Matrix[i + 1][j]};
-                NewMatrix[i][j] = mayorMatrix(valores);
-                MinMatrix[i][j] = menorMatrix(valores);
-              } else { // el punto esta solo en el borde superior
-                if (j != 0) {
-                  int[] valores =
-                      new int[] {Matrix[i][j - 1], Matrix[i][j],
-                                 Matrix[i][j + 1], Matrix[i + 1][j - 1],
-                                 Matrix[i + 1][j], Matrix[i + 1][j + 1]};
-                  NewMatrix[i][j] = mayorMatrix(valores);
-                  MinMatrix[i][j] = menorMatrix(valores);
-                }
-              }
-            }
-            if (j == n - 1) { // el valor esta en el borde der
-              if (i != 0 && i != n - 1) {
-                int[] valores =
-                    new int[] {Matrix[i - 1][j - 1], Matrix[i - 1][j],
-                               Matrix[i][j - 1],     Matrix[i][j],
-                               Matrix[i + 1][j - 1], Matrix[i + 1][j]};
-                NewMatrix[i][j] = mayorMatrix(valores);
-                MinMatrix[i][j] = menorMatrix(valores);
-              }
-            }
-            if (j == 0) { // el punto esta en el borde izq
-              if (i != 0 && i != n - 1) {
-                int[] valores =
-                    new int[] {Matrix[i - 1][j], Matrix[i - 1][j + 1],
-                               Matrix[i][j],     Matrix[i][j + 1],
-                               Matrix[i + 1][j], Matrix[i + 1][j + 1]};
-                NewMatrix[i][j] = mayorMatrix(valores);
-                MinMatrix[i][j] = menorMatrix(valores);
-              }
-            }
-          } else {
-            int[] valores = new int[] {
-                Matrix[i - 1][j - 1], Matrix[i - 1][j], Matrix[i - 1][j + 1],
-                Matrix[i][j - 1],     Matrix[i][j],     Matrix[i][j + 1],
-                Matrix[i + 1][j - 1], Matrix[i + 1][j], Matrix[i + 1][j + 1]};
-            NewMatrix[i][j] = mayorMatrix(valores);
-            MinMatrix[i][j] = menorMatrix(valores);
-          }
         }
-      }
     }
 
     void despliegaNMatrix() {
