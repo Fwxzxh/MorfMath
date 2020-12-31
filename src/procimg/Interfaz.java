@@ -19,6 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import static java.lang.Math.sqrt;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -48,9 +50,14 @@ public class Interfaz extends javax.swing.JFrame {
 	int[][] pixels = new int[600][600]; //matriz de grises original
 	int[][] pixelsMin = new int[600][600]; //matriz de grises minima
 	int[][] pixelsMax = new int[600][600]; //matriz de grises maxima
+        int[][] pixelsZp = new int[600][600];
 
 	FileInputStream entrada;
 	FileOutputStream salida;
+        public Map<Integer, pZoneModel> zonaPlanaUI = new HashMap<Integer, pZoneModel>();  
+
+       
+        
 	
 	public Interfaz() {
 		initComponents();
@@ -108,9 +115,18 @@ public class Interfaz extends javax.swing.JFrame {
             if (n == 3) {
                 for (int row = 0; row < matrix.length; row++) {
                     for (int col = 0; col < matrix[row].length; col++) {
-                        Txt_Org.append(String.format("%3d%5s", matrix[row][col], "|"));
+                        Txt_Org.append(String.format("%4d%5s", matrix[row][col], "|"));
                     }
                     Txt_Org.append("\n");
+                }
+                Txt_estado.setText("OK");
+            }
+            if (n == 4) {
+                for (int row = 0; row < matrix.length; row++) {
+                    for (int col = 0; col < matrix[row].length; col++) {
+                        Txt_ZpMatrix.append(String.format("%4d%5s", matrix[row][col], "|"));
+                    }
+                    Txt_ZpMatrix.append("\n");
                 }
                 Txt_estado.setText("OK");
             }
@@ -181,6 +197,15 @@ public class Interfaz extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         Txt_Org = new javax.swing.JTextArea();
         Btn_CalcularOrg = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        Txt_ZP = new javax.swing.JTextArea();
+        Btn_getZP = new javax.swing.JButton();
+        Btn_printZP = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        Txt_ZpMatrix = new javax.swing.JTextArea();
+        Btn_ZpMatrix = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -199,6 +224,11 @@ public class Interfaz extends javax.swing.JFrame {
         });
 
         Btn_salir.setText("Salir");
+        Btn_salir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_salirActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Red:");
 
@@ -504,6 +534,89 @@ public class Interfaz extends javax.swing.JFrame {
 
         Panel.addTab("MatOrg", jPanel2);
 
+        Txt_ZP.setColumns(20);
+        Txt_ZP.setRows(5);
+        jScrollPane4.setViewportView(Txt_ZP);
+
+        Btn_getZP.setText("P. Zonas planas");
+        Btn_getZP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_getZPActionPerformed(evt);
+            }
+        });
+
+        Btn_printZP.setText("Print ZonasPlanas");
+        Btn_printZP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_printZPActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(Btn_getZP)
+                        .addGap(30, 30, 30)
+                        .addComponent(Btn_printZP)
+                        .addGap(0, 504, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 554, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Btn_getZP)
+                    .addComponent(Btn_printZP))
+                .addContainerGap(14, Short.MAX_VALUE))
+        );
+
+        Panel.addTab("Zonas Planas", jPanel3);
+
+        Txt_ZpMatrix.setColumns(20);
+        Txt_ZpMatrix.setRows(5);
+        jScrollPane5.setViewportView(Txt_ZpMatrix);
+
+        Btn_ZpMatrix.setText("Mostrar");
+        Btn_ZpMatrix.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_ZpMatrixActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Btn_ZpMatrix)
+                .addContainerGap())
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(Btn_ZpMatrix)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        Panel.addTab("zPMatrix", jPanel5);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -784,6 +897,42 @@ public class Interfaz extends javax.swing.JFrame {
         System.out.print("okokokokok");
     }//GEN-LAST:event_L_imgGKeyPressed
 
+    private void Btn_getZPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_getZPActionPerformed
+        // TODO add your handling code here:
+        Txt_estado.setText("Obteniendo Zonas Planas");
+        Matrix mt = new Matrix(pixels, widith);
+        mt.procesaZPlana();
+        pixelsZp = mt.getZP();
+        mt.getZonas();
+        zonaPlanaUI = mt.getMapZP();
+        Txt_estado.setText("Zonas planas obtenidas!");
+    }//GEN-LAST:event_Btn_getZPActionPerformed
+
+    private void Btn_printZPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_printZPActionPerformed
+        // TODO add your handling code here:
+        for (Map.Entry<Integer, pZoneModel> entry : zonaPlanaUI.entrySet()) {
+            Integer key = entry.getKey();
+            pZoneModel modelo = entry.getValue();
+            Txt_ZP.append("Zona "+key+": ");
+            System.out.println(key);
+            for (int i = 0; i < modelo.pares.size(); i++) {
+                Txt_ZP.append("["+modelo.pares.get(i)[0]+","+modelo.pares.get(i)[1]+"] ");
+                if (i > 1024){ break; }
+            }
+            Txt_ZP.append("\n");
+        }
+    }//GEN-LAST:event_Btn_printZPActionPerformed
+
+    private void Btn_salirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_salirActionPerformed
+        // TODO add your handling code here:
+        Txt_estado.setText("Ok");
+    }//GEN-LAST:event_Btn_salirActionPerformed
+
+    private void Btn_ZpMatrixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_ZpMatrixActionPerformed
+        // TODO add your handling code here:
+        printMatrix(pixelsZp, 4);
+    }//GEN-LAST:event_Btn_ZpMatrixActionPerformed
+
 
 	public static void main(String args[]) {
 		/* Set the Nimbus look and feel */
@@ -824,9 +973,12 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JButton Btn_Gray;
     private javax.swing.JButton Btn_Max;
     private javax.swing.JButton Btn_MostrarMin;
+    private javax.swing.JButton Btn_ZpMatrix;
     private javax.swing.JButton Btn_calcularMax;
     private javax.swing.JButton Btn_color;
     private javax.swing.JButton Btn_extraer;
+    private javax.swing.JButton Btn_getZP;
+    private javax.swing.JButton Btn_printZP;
     private javax.swing.JButton Btn_salir;
     private javax.swing.JPanel ImgMax;
     private javax.swing.JPanel Img_Min;
@@ -840,6 +992,8 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JTextArea Txt_Max;
     private javax.swing.JTextArea Txt_Min;
     private javax.swing.JTextArea Txt_Org;
+    private javax.swing.JTextArea Txt_ZP;
+    private javax.swing.JTextArea Txt_ZpMatrix;
     private javax.swing.JTextField Txt_blue;
     private javax.swing.JLabel Txt_estado;
     private javax.swing.JTextField Txt_green;
@@ -858,9 +1012,13 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     // End of variables declaration//GEN-END:variables
 }
